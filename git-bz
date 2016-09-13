@@ -1723,7 +1723,12 @@ def do_apply(*args):
             s = dep_bug.bug_status
             if ( not s.startswith("Pushed") ) and s != "RESOLVED":
                 print "\nBug %s Depends on bug %s" % ( bug.id, dep_bug.id)
-                opt = prompt_multi("Follow? [(y)es, (n)o]", ["y", "n"])
+
+                if global_options.yes:
+                    opt = "y"
+                else:
+                    opt = prompt_multi("Follow? [(y)es, (n)o]", ["y", "n"])
+
                 if opt == "n":
                     continue
                 else:
@@ -1745,7 +1750,11 @@ def do_apply(*args):
         for patch in patches:
             print "%d - %s" % (patch.attach_id, patch.description)
         print
-        opt = prompt_multi("Apply? [(y)es, (n)o, (i)nteractive]", ["y", "n", "i"])
+
+        if global_options.yes:
+            opt = "y"
+        else:
+            opt = prompt_multi("Apply? [(y)es, (n)o, (i)nteractive]", ["y", "n", "i"])
 
         if opt == "n":
             return
@@ -2604,6 +2613,8 @@ elif command == 'apply':
                       help="skip the current patch after a failure")
     parser.add_option("", "--abort", action="store_true",
                       help="abort the current patch set and revert to original state")
+    parser.add_option("-y", "--yes", action="store_true",
+                      help="Don't ask for confirmation")
     add_add_url_options()
     min_args = 0
     max_args = 1
