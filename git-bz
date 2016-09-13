@@ -116,6 +116,9 @@ import string
 # options dictionary from optparse
 global_options = None
 
+# dictionary of already applied bugs
+global_applied_bugs = {}
+
 # Utility functions for git
 # =========================
 
@@ -1713,12 +1716,12 @@ def do_apply(*args):
         for d_id in dependencies:
             if d_id == '':
                 continue
+            if global_applied_bugs.has_key(d_id):
+                continue
             dep_bug = Bug.load(BugHandle.parse_or_die(d_id),
                            attachmentdata=False)
             s = dep_bug.bug_status
-            if     s == "Needs Signoff" \
-                or s == 'Signed Off' \
-                or s == 'Passed QA':
+            if ( not s.startswith("Pushed") ) and s != "RESOLVED":
                 print "\nBug %s Depends on bug %s" % ( bug.id, dep_bug.id)
                 opt = prompt_multi("Follow? [(y)es, (n)o]", ["y", "n"])
                 if opt == "n":
@@ -1829,6 +1832,8 @@ FIXME: need commit message.
                 git.commit(amend=True, _interactive=True)
             except CalledProcessError:
                 print >>sys.stderr, "Warning: left dummy commit message"
+
+    global_applied_bugs[bug.id] = 1
 
     if global_options.add_url and not do_not_add_url:
         # Slightly hacky. We could add the URLs as we go by using
